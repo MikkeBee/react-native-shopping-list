@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Shopping Lists Manager 📝
 
 A mobile-first shopping lists manager built with React Native and Expo. Create multiple shopping lists, manage items with edit/copy/delete capabilities, and navigate seamlessly between lists - all with offline-first local storage.
