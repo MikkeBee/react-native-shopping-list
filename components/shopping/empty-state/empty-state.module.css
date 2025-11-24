@@ -1,0 +1,10 @@
+/**
+ * Empty State Styles
+ * 
+ * Note: React Native uses StyleSheet.create() instead of CSS.
+ * Styles are defined in empty-state.tsx
+ */
+
+.placeholder {
+  display: none;
+}

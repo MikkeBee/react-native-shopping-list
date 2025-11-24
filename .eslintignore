@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.expo/
+web-build/
+
+# Coverage
+coverage/
+
+# Native folders
+/ios
+/android
+
+# Minified files
+*.min.js
+
+# Generated files
+expo-env.d.ts

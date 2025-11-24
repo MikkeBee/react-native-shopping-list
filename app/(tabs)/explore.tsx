@@ -1,112 +1,327 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+/**
+ * Settings Screen
+ * 
+ * Allows users to customize app theme with preset themes or custom colors.
+ */
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { ThemePresets } from '@/constants/theme';
+import { useTheme } from '@/contexts/theme-context';
+import { useSettings } from '@/hooks/use-settings';
+import { ThemePresetId } from '@/types';
+import { lightImpact, notifySuccess } from '@/utils/haptics';
+import { useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 
-export default function TabTwoScreen() {
+export default function SettingsScreen() {
+  const { colors } = useTheme();
+  const { themeId, isLoading, updateTheme, resetToDefault } = useSettings();
+  const [isChanging, setIsChanging] = useState(false);
+
+  /**
+   * Handle theme selection
+   */
+  const handleThemeSelect = async (newThemeId: ThemePresetId) => {
+    if (newThemeId === themeId || newThemeId === 'custom') {
+      return;
+    }
+
+    await lightImpact();
+    
+    try {
+      setIsChanging(true);
+      await updateTheme(newThemeId);
+      await notifySuccess();
+    } catch (error) {
+      console.error('Failed to update theme:', error);
+      Alert.alert('Error', 'Failed to update theme. Please try again.', [{ text: 'OK' }]);
+    } finally {
+      setIsChanging(false);
+    }
+  };
+
+  /**
+   * Handle reset to default
+   */
+  const handleReset = async () => {
+    await lightImpact();
+    
+    Alert.alert(
+      'Reset Theme',
+      'Are you sure you want to reset to the default theme?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsChanging(true);
+              await resetToDefault();
+              await notifySuccess();
+            } catch (error) {
+              console.error('Failed to reset theme:', error);
+              Alert.alert('Error', 'Failed to reset theme. Please try again.', [{ text: 'OK' }]);
+            } finally {
+              setIsChanging(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading settings...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
+          <Text style={[styles.subtitle, { color: colors.muted }]}>
+            Customize your app appearance
+          </Text>
+        </View>
+
+        {/* Preset Themes Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Preset Themes</Text>
+          <Text style={[styles.sectionDescription, { color: colors.muted }]}>
+            Choose from our curated theme presets
+          </Text>
+
+          <View style={styles.themesGrid}>
+            {(Object.keys(ThemePresets) as ThemePresetId[])
+              .filter(id => id !== 'custom')
+              .map(presetId => {
+                const preset = ThemePresets[presetId];
+                const isSelected = themeId === presetId;
+
+                return (
+                  <Pressable
+                    key={presetId}
+                    onPress={() => handleThemeSelect(presetId)}
+                    disabled={isChanging || isSelected}
+                    style={({ pressed }) => [
+                      styles.themeCard,
+                      {
+                        backgroundColor: colors.cardBackground,
+                        borderColor: isSelected ? colors.tint : colors.cardBorder,
+                        borderWidth: isSelected ? 2 : 1,
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}
+                  >
+                    {/* Theme Preview Colors */}
+                    <View style={styles.themePreview}>
+                      <View
+                        style={[
+                          styles.previewColor,
+                          { backgroundColor: preset.light.tint },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.previewColor,
+                          { backgroundColor: preset.light.cardBackground },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.previewColor,
+                          { backgroundColor: preset.dark.tint },
+                        ]}
+                      />
+                    </View>
+
+                    {/* Theme Info */}
+                    <Text style={[styles.themeName, { color: colors.text }]}>
+                      {preset.name}
+                    </Text>
+                    <Text style={[styles.themeDescription, { color: colors.muted }]} numberOfLines={2}>
+                      {preset.description}
+                    </Text>
+
+                    {isSelected && (
+                      <View style={[styles.selectedBadge, { backgroundColor: colors.tint }]}>
+                        <Text style={styles.selectedText}>✓ Active</Text>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+          </View>
+        </View>
+
+        {/* Custom Colors Section (Coming Soon) */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Custom Colors</Text>
+          <Text style={[styles.sectionDescription, { color: colors.muted }]}>
+            Create your own color scheme (coming soon)
+          </Text>
+          
+          <View
+            style={[
+              styles.comingSoonCard,
+              {
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.cardBorder,
+              },
+            ]}
+          >
+            <Text style={[styles.comingSoonText, { color: colors.muted }]}>
+              🎨 Custom color picker will be available in the next update
+            </Text>
+          </View>
+        </View>
+
+        {/* Reset Button */}
+        {themeId !== 'default' && (
+          <View style={styles.section}>
+            <Pressable
+              onPress={handleReset}
+              disabled={isChanging}
+              style={({ pressed }) => [
+                styles.resetButton,
+                {
+                  backgroundColor: colors.danger,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              {isChanging ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.resetButtonText}>Reset to Default Theme</Text>
+              )}
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  header: {
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  themesGrid: {
+    gap: 12,
+  },
+  themeCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  themePreview: {
     flexDirection: 'row',
     gap: 8,
+    marginBottom: 12,
+  },
+  previewColor: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+  },
+  themeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  themeDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  selectedBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  selectedText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  comingSoonCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    padding: 24,
+    alignItems: 'center',
+  },
+  comingSoonText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  resetButton: {
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
