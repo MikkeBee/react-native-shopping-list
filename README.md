@@ -1,4 +1,10 @@
-<<<<<<< HEAD
+This is my first successful React Native speckit app (two previous tries failed due to over-complex specs and attempts to build the whole app in one go). The aim for this trial was to build a basic functioning app as quickly as possible using speckit. The approach this time around that, in my opinion, contributed to the success was buiding MVPs between each phase, as opposed to one giant ready app. It was also streamlined in a way that left out tests and maybe a few other "good-to-have" things. Between phases I did error checks, made fixes, and adjusted course accordingly. Once the whole app was built (it really was rather quick), I decided to once again play around with a few ideas, and I added colour theming. Building the app in smaller chunks felt like it allowed me to have a bit more control over the whole project, as opposed to sitting by and watching while the AI had all the fun. If I would continue further with this app, improvements would be:
+- add tests
+- make it accessible (some of the themes, while cool, are truly terrible in terms of accessibility)
+- there's probably a few more things I could do, but nothing is coming to mind at the moment.
+
+The whole app took maybe 1,5 days, max 2, in order to get the basic structure built, and another 0,5/1 day to get themes and final bugs fixed. Maybe not full days (I do have other stuff to do after all), but you get the idea. 
+
 # Shopping Lists Manager 📝
 
 A mobile-first shopping lists manager built with React Native and Expo. Create multiple shopping lists, manage items with edit/copy/delete capabilities, and navigate seamlessly between lists - all with offline-first local storage.
